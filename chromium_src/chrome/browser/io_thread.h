@@ -179,6 +179,9 @@ private:
   std::unique_ptr<ssl_config::SSLConfigServiceManager>
       ssl_config_service_manager_;
 
+  content::mojom::NetworkServicePtr ui_thread_network_service_;
+  content::mojom::NetworkServiceRequest network_service_request_;
+
   DISALLOW_COPY_AND_ASSIGN(IOThread);
 };
 

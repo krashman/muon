@@ -41,10 +41,11 @@
 using content::BrowserThread;
 
 IOThread::IOThread(PrefService* local_state,
-		   net_log::ChromeNetLog* net_log,
-		   SystemNetworkContextManager* system_network_context_manager)
+                   net_log::ChromeNetLog* net_log,
+                   SystemNetworkContextManager* system_network_context_manager)
     : net_log_(net_log),
-      globals_(nullptr) {
+      globals_(nullptr),
+      network_service_request_(mojo::MakeRequest(&ui_thread_network_service_)) {
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   auth_schemes_ = local_state->GetString(prefs::kAuthSchemes);
@@ -387,7 +388,8 @@ void IOThread::ConstructSystemRequestContext() {
   SetUpProxyConfigService(builder.get(),
                           std::move(system_proxy_config_service_));
 
-  globals_->network_service = content::NetworkService::Create();
+  globals_->network_service = content::NetworkService::Create(
+      std::move(network_service_request_), net_log_);
   globals_->system_network_context =
       globals_->network_service->CreateNetworkContextWithBuilder(
           std::move(network_context_request_),
