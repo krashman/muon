@@ -51,6 +51,7 @@ source_set("browser") {
     "//components/autofill/content/browser:risk_proto",
     "//components/autofill/content/browser",
     "//components/autofill/core/browser",
+    "//components/component_updater",
     "//components/resources",
     "//components/spellcheck:build_features",
     "//components/subresource_filter/content/browser",
