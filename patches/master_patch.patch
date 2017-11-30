@@ -1883,22 +1883,10 @@ index 76a36536f92ca5cc361e35cb8e27de1bbcc88327..004e678da6e383cfb97fbd7022d9faca
    if (GetWebMediaPlayer())
      GetWebMediaPlayer()->SetVolume(EffectiveMediaVolume());
 diff --git a/third_party/WebKit/Source/core/html/media/AutoplayPolicy.cpp b/third_party/WebKit/Source/core/html/media/AutoplayPolicy.cpp
-index 8adf2d1030ccb91f438d936e94175b20b389f858..2f3b3fdb109cc9bc447d554acdce1a7f0b27cdd8 100644
+index 8adf2d1030ccb91f438d936e94175b20b389f858..fd6929b30ceef528010e870e540e1af2f9d48cb1 100644
 --- a/third_party/WebKit/Source/core/html/media/AutoplayPolicy.cpp
 +++ b/third_party/WebKit/Source/core/html/media/AutoplayPolicy.cpp
-@@ -264,6 +264,11 @@ void AutoplayPolicy::UnlockUserGesture() {
- }
- 
- bool AutoplayPolicy::IsGestureNeededForPlayback() const {
-+  // MUON(darkdh): check autoplay setting
-+  if (!IsAutoplayAllowedPerSettings()) {
-+    return true;
-+  }
-+
-   if (!IsLockedPendingUserGesture())
-     return false;
- 
-@@ -280,14 +285,16 @@ bool AutoplayPolicy::IsGestureNeededForPlaybackIfPendingUserGestureIsLocked()
+@@ -280,15 +280,18 @@ bool AutoplayPolicy::IsGestureNeededForPlaybackIfPendingUserGestureIsLocked()
    // - Data Saver is not enabled;
    // - Preload was not disabled (low end devices);
    // - Autoplay is enabled in settings;
@@ -1910,6 +1898,7 @@ index 8adf2d1030ccb91f438d936e94175b20b389f858..2f3b3fdb109cc9bc447d554acdce1a7f
 -        element_->GetDocument()
 -            .GetSettings()
 -            ->GetForcePreloadNoneForMediaElements()) &&
+-      IsAutoplayAllowedPerSettings()) {
 +  // if (element_->IsHTMLVideoElement() && element_->muted() &&
 +  //     RuntimeEnabledFeatures::AutoplayMutedVideosEnabled() &&
 +  //     !(element_->GetDocument().GetSettings() &&
@@ -1918,11 +1907,13 @@ index 8adf2d1030ccb91f438d936e94175b20b389f858..2f3b3fdb109cc9bc447d554acdce1a7f
 +  //       element_->GetDocument()
 +  //           .GetSettings()
 +  //           ->GetForcePreloadNoneForMediaElements()) &&
-+  // MUON(darkdh): only check autoplay setting
-+  if (element_->IsHTMLVideoElement() &&
-       IsAutoplayAllowedPerSettings()) {
++  // MUON(darkdh): default allow muted media and only check autoplay setting
++  // for non muted one
++  if ((element_->IsHTMLVideoElement() || element_->IsAudioElement()) &&
++      (element_->muted() || IsAutoplayAllowedPerSettings())) {
      return false;
    }
+ 
 diff --git a/third_party/boringssl/BUILD.generated.gni b/third_party/boringssl/BUILD.generated.gni
 index 0e96ff54ff898080fef9f132f37b3a1f75b4d8fe..8362d3d55394372b54a4c0234d562bc698155347 100644
 --- a/third_party/boringssl/BUILD.generated.gni
